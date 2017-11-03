@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+
+<html>
+
+<head>
+
+  <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=7; IE=EDGE"/>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+  <title>Teamwork</title>
+
+  <link rel=stylesheet href="platform.css" type="text/css">
+
+  <link rel=stylesheet href="gantt.css" type="text/css">
+  <link rel="stylesheet" href="index.css" />
+
+
+  <script src="http://www.jq22.com/jquery/1.8.3/jquery.min.js"></script>
+
+  <script src="libs/jquery.livequery.min.js"></script>
+
+  <script src="libs/jquery.timers.js"></script>
+
+  <script src="libs/platform.js"></script>
+
+  <script src="libs/date.js"></script>
+
+  <script src="libs/i18nJs.js"></script>
+
+  <script src="libs/JST/jquery.JST.js"></script>
+
+
+  <script type="text/javascript" src="libs/jquery.svg.min.js"></script>
+
+  <!--In case of jquery 1.7-->
+
+  <script src="ganttUtilities.js"></script>
+
+  <script src="ganttTask.js"></script>
+
+  <script src="ganttDrawerSVG.js"></script>
+
+  <script src="ganttGridEditor.js"></script>
+
+  <script src="ganttMaster.js"></script>  
+
+</head>
+
+<body style="background-color: #fff;">
+
+
+
+
+
+<div id="workSpace" style="padding:0px; overflow-y:auto; overflow-x:hidden;border:1px solid #e5e5e5;position:relative;margin:0 5px"></div>
+
+
+
+<div id="taZone" style="display:none;" class="noprint">
+
+   <textarea rows="8" cols="150" id="ta">
+
+    {"tasks":[
+
+    {"id":-1,"name":"Gantt editor","code":"","level":0,"status":"STATUS_ACTIVE"}
+
+    ,{"id":-2,"name":"coding","code":"","level":1,"status":"STATUS_ACTIVE"}
+
+    ,{"id":-3,"name":"gantt part","code":"","level":2,"status":"STATUS_ACTIVE"}
+
+    ,{"id":-4,"name":"editor part","code":"","level":2,"status":"STATUS_SUSPENDED"}
+
+    ,{"id":-5,"name":"testing","code":"","level":1,"status":"STATUS_SUSPENDED"}
+
+    ,{"id":-6,"name":"test on safari","code":"","level":2,"status":"STATUS_SUSPENDED"}
+
+   	,{"id":-7,"name":"test on ie","code":"","level":2,"status":"STATUS_SUSPENDED"}
+
+    ,{"id":-8,"name":"test on chrome","code":"","level":2,"status":"STATUS_SUSPENDED"}
+
+    ],"selectedRow":0,"canWriteOnParent":true}  </textarea>
+
+</div>
+
+
+<script type="text/javascript">
+
+var ge;  //this is the hugly but very friendly global var for the gantt editor
+
+$(function() {
+
+
+
+  //load templates
+
+  $("#ganttemplates").loadTemplates();
+
+
+
+  // here starts gantt initialization
+
+  ge = new GanttMaster();
+
+  var workSpace = $("#workSpace");
+
+  workSpace.css({width:$(window).width() - 20,height:$(window).height() - 100});
+
+  ge.init(workSpace);
+
+
+  //simulate a data load from a server.
+
+  loadGanttFromServer();
+
+
+
+});
+
+function loadGanttFromServer(taskId, callback) {
+
+  loadFromLocalStorage();
+
+
+}
+
+//-------------------------------------------  LOCAL STORAGE MANAGEMENT (for this demo only) ------------------------------------------------------
+
+
+
+
+
+Storage.prototype.getObject = function(key) {
+
+  return this.getItem(key) && JSON.parse(this.getItem(key));
+
+};
+
+
+
+
+
+function loadFromLocalStorage() {
+
+  var ret;
+
+
+  if (!ret || !ret.tasks || ret.tasks.length == 0){
+
+    ret = JSON.parse($("#ta").val());
+
+    //actualiza data
+
+    var offset=new Date().getTime()-ret.tasks[0].start;
+
+    for (var i=0;i<ret.tasks.length;i++)
+
+      ret.tasks[i].start=ret.tasks[i].start+offset;
+
+  }
+
+  ge.loadProject(ret);
+
+
+}
+
+</script>
+
+
+
+<div id="gantEditorTemplates" style="display:none;">
+
+
+  <div class="__template__" type="TASKSEDITHEAD"><!--
+
+  <table class="gdfTable" cellspacing="0" cellpadding="0">
+
+    <thead>
+
+    <tr style="height:40px">
+
+      <th class="gdfColHeader" style="width:30%;">name</th>
+
+      <th class="gdfColHeader" style="width:10%;">status</th>
+
+      <th class="gdfColHeader " style="width:10%;">end</th>
+
+      <th class="gdfColHeader" style="width:10%;">dur.</th>
+
+      <th class="gdfColHeader" style="width:10%;">dep.</th>
+
+      <th class="gdfColHeader" style="width:30%;">assignees</th>
+
+    </tr>
+
+    </thead>
+
+  </table>
+
+  --></div>
+  <div class="__template__" type="TASKROW"><!--
+
+  <tr taskId="(#=obj.id#)" class="taskEditRow" level="(#=level#)">
+
+    <td class="gdfCell indentCell" style="padding-left:(#=obj.level*10#)px;" name="name">
+
+      <div class="(#=obj.isParent()?'exp-controller expcoll exp':'exp-controller'#)" align="center"></div>
+
+      <input type="text" name="name" value="(#=obj.name#)">
+
+    </td>
+
+
+    <td class="gdfCell"><input type="text" name="status"  value="(#=obj.status#)"></td>
+
+    <td class="gdfCell"><input type="text" name="end" value=""></td>
+
+    <td class="gdfCell"><input type="text" name="duration" value="(#=obj.duration#)"></td>
+
+    <td class="gdfCell"><input type="text" name="depends" value="(#=obj.depends#)" (#=obj.hasExternalDep?"readonly":""#)></td>
+
+    <td class="gdfCell taskAssigs">(#=obj.getAssigsString()#)</td>
+
+  </tr>
+
+  --></div>
+
+
+</div>
+</body>
+
+</html>
